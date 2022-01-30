@@ -1,0 +1,19 @@
+#To copy the contents of one excel sheet to another 
+
+import pandas as pd
+import numpy as np
+
+#File course address saved in source
+source = "//Users/NadiaHaque/Downloads/StudyRoomEssentials.xlsx"
+
+#save the data from the excel file to Pandas DataFrame
+data = pd.read_excel(source)
+
+#File destination saved in dest
+dest = "//Users/NadiaHaque/Downloads/StudyRoomEssentials_Copy.xlsx"
+
+#save it in destination file
+data.drop(data[(data['Price'] < 1000)].index, inplace=True)
+data.to_excel(dest, index=False, columns=['Product','Price'])
+
+print(data.head())

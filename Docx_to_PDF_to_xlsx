@@ -1,0 +1,36 @@
+from tabula import read_pdf
+import pandas as pd 
+from docx2pdf import convert
+
+#Excel source file destination
+docx_path = "//Users/NadiaHaque/Downloads/Task.docx"
+
+#PDF file destination
+pdf_path = "//Users/NadiaHaque/Downloads/TaskFile.pdf"
+
+#convert docx to pdf specifying input & output paths
+try:
+    convert(docx_path,pdf_path)
+except FileNotFoundError:
+    print('File does not exist')
+
+#Extract table from PDF file
+try:
+    dfs = read_pdf(pdf_path, pages='all', multiple_tables = False)[0]
+except FileNotFoundError:
+    print('File does not exist')
+    
+
+
+#calculating the dicounted price for each product 
+for i in range (len(dfs.columns)+2):
+    percent = dfs.iloc[i,3]
+    percent_num = float(percent.strip('%'))/100
+    discounted_price=(1-percent_num)*float(dfs.iloc[i,2])
+    dfs.iloc[i,4] = discounted_price
+    
+#Setting destination folder    
+dest = "//Users/NadiaHaque/Downloads/TaskFile.xlsx" 
+
+#Saving to excel file
+dfs.to_excel(dest)

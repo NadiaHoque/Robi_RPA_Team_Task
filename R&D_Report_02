@@ -1,0 +1,19 @@
+import PyPDF2
+from io import StringIO
+import pandas as pd
+
+pdf_file = open("//Users/NadiaHaque/Downloads/200332176-20210915.pdf", 'rb')
+read_pdf = PyPDF2.PdfFileReader(pdf_file)
+number_of_pages = read_pdf.getNumPages()
+page = read_pdf.getPage(0)
+page_content = page.extractText()
+page_content = page_content.replace("!", "\n")
+print(page_content)
+
+StringData = StringIO(page_content)
+df = pd.read_csv(StringData, sep =" ")
+df
+
+dest="//Users/NadiaHaque/Documents/Data.xlsx"
+
+df.to_excel(dest)

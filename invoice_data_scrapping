@@ -1,0 +1,116 @@
+from pdf2image import convert_from_path
+
+import pytesseract as tess  # img to txt ****tesseract.exe needed****
+from PIL import Image
+
+import os
+import cv2
+
+
+def SetCSV1(CSV_Paths, Account='Account', Mobile_Number='Mobile Number', Date='Date', Invoice_No='Invoice No.',
+            Period='Period', Deposit='Deposit'):
+    with open(CSV_Paths, 'r+') as Attnd:
+        Attnd.readlines()
+        Attnd.writelines(
+            Account + '>>>>' + Mobile_Number + '>>>>' + Date + '>>>>' + Invoice_No + '>>>>' + Period + '>>>>' + Deposit + '\n')
+
+
+def SetCSV2(CSV_Paths, item='item', amount='amount(tk)', duration='0'):
+    with open(CSV_Paths, 'r+') as Attnd:
+        Attnd.readlines()
+        Attnd.writelines(item + '>>>>' + duration + '>>>>' + amount + '\n')
+
+
+def SetCSV3(CSV_Paths, LstIdx):
+    with open(CSV_Paths, 'r+') as Attnd:
+        Attnd.readlines()
+        Attnd.writelines(LstIdx[0] + '>>>>' + LstIdx[1] + '>>>>' + LstIdx[2] + '>>>>' + LstIdx[4] + '\n')
+
+
+tess.pytesseract.tesseract_cmd = r'C:\\Users\\mouri.nadia\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract.exe'
+
+PdfPath = 'C:\\Users\\mouri.nadia\\PycharmProjects\\pythonProject2\\pdf_file.pdf'
+ImgPath = 'C:\\Users\\mouri.nadia\\PycharmProjects\\pythonProject2\\'
+pages = convert_from_path(PdfPath)
+count = 0
+
+for page in pages:
+    count += 1
+    page.save(ImgPath + 'ImageNum-' + str(count) + '.jpg', 'JPEG')
+
+img01 = ImgPath + 'imageImageNum-1.jpg'  # AccDl4.jpg
+
+imgS = Image.open(img01)  # 'E:\\Personal Project\\Image_to_convert\\Image_to_txt\\entrylist.jpg'
+strng = tess.image_to_string(imgS)
+strng = strng.split('\n')
+##print(strng)#[:10]
+SubLst2 = strng[:10]
+SubLst3A = strng[14]
+SubLst3B = strng[16]
+SubLst4A = strng[24:36]
+SubLst4B = strng[38:44]
+KeyLst = ['Account', 'Mobile Number', 'Date', 'Invoice No.', 'Period', 'Deposit']
+print('\n', '>>>', '\n', SubLst2, '\n', '>>>', '\n', SubLst3A, '\n', '>>>', '\n', SubLst3B, '\n', '>>>', '\n', SubLst4A,
+      '\n', '>>>', '\n', SubLst4B)
+asignLst = []
+
+for words in SubLst2:
+    try:
+        CmLst = words.split(':')
+        asignLst.append(CmLst[1])
+
+    except:
+        pass
+print(KeyLst)
+print(asignLst)
+
+# making Attendence in .csv
+CSV_Path1 = 'C:\\Users\\mouri.nadia\\PycharmProjects\\pythonProject2\\history001.csv'
+SetCSV1(CSV_Path1, '  Account  ', ' Mobile Number ', ' Date ', ' Invoice No. ', ' Period ', ' Deposit ')
+SetCSV1(CSV_Path1, asignLst[0], asignLst[1], asignLst[2], asignLst[3], asignLst[4], asignLst[5])
+
+SubLst3B = SubLst3B.split()
+CSV_Path2 = 'C:\\Users\\mouri.nadia\\PycharmProjects\\pythonProject2\\history002.csv'
+SetCSV1(CSV_Path2, '   Previous Balance  ', ' Payments ', ' Adjustments ', ' Current Charges ', ' Amount Due ',
+        ' Due Date ')
+SetCSV1(CSV_Path2, SubLst3B[0], SubLst3B[1], SubLst3B[2], SubLst3B[3], SubLst3B[4], SubLst3B[5])
+
+# print('#B >>>',SubLst3B)
+val = ''
+CSV_Path3 = 'C:\\Users\\mouri.nadia\\PycharmProjects\\pythonProject2\\history003.csv'
+SetCSV2(CSV_Path3, ' item >>>> ', 'Duration >>>>', ' Amount ')
+for wrd in SubLst4A[1:]:
+    cmlst = wrd.split()
+    print(cmlst)
+    if len(cmlst) > 3:
+        xl = cmlst[:-2]
+        ##print(xl,'<<')
+        val = ''.join(xl)
+        ##print(val,type(val))
+        SetCSV2(CSV_Path3, val, cmlst[-1], cmlst[-2])
+    elif len(cmlst) <= 3 and len(cmlst) > 0:
+        xl = cmlst[:-1]
+        ##print(xl,'<<')
+        val = ''.join(xl)
+        ##print(val,type(val))
+        SetCSV2(CSV_Path3, val, cmlst[-1])
+
+CSV_Path4 = 'C:\\Users\\mouri.nadia\\PycharmProjects\\pythonProject2\\history004.csv'
+SetCSV3(CSV_Path4, SubLst4B)
+
+##OpenCV part
+tstimg = cv2.imread(img01)
+tstimg = cv2.resize(tstimg, (720, 680), interpolation=cv2.INTER_AREA)
+##tstimg=imutils.resize(tstimg, width=840,height=960)
+
+cv2.imshow('MainImage', tstimg)  ##[Ys:Ye,Xs:Xe]
+cv2.imshow('Image1', tstimg[50:150, 0:300])
+cv2.imshow('Image2', tstimg[60:160, 400:680])
+cv2.imshow('Image3', tstimg[190:240, 0:680])
+cv2.imshow('Image4', tstimg[250:475, 0:420])
+##cv2.imshow('Image5',tstimg[350:670,100:320])
+
+# print('Saved')
+
+cv2.waitKey(0)  # waits until a key is pressed
+cv2.destroyAllWindows()  # destroys the window showing image
